@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "KaraokeFlow",
-    "slug": "KaraokeFlow",
+    "slug": "karaokeflow",
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
@@ -19,6 +19,12 @@
     "backgroundColor": "#000000",
     "platforms": [
       "android"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c8d4c90e-c5bb-4042-bf5f-5029d5b3ad77"
+      }
+    },
+    "owner": "tsachi-shush"
   }
 }
