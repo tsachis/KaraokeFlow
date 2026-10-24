@@ -15,6 +15,7 @@ interface LyricsDisplayProps {
   positionSec: number;
   mode: DisplayMode;
   flipAxis: FlipAxis;
+  textScale: number;
 }
 
 const MIRROR_TRANSFORMS = {
@@ -45,7 +46,9 @@ function messageFor(lyrics: LyricsStatus): string {
   }
 }
 
-export function LyricsDisplay({ title, artist, lyrics, positionSec, mode, flipAxis }: LyricsDisplayProps) {
+const FONT_SIZE = { trackInfo: 16, side: 24, active: 44 } as const;
+
+export function LyricsDisplay({ title, artist, lyrics, positionSec, mode, flipAxis, textScale }: LyricsDisplayProps) {
   const lines = lyrics.status === 'ready' && lyrics.result.kind === 'synced' ? lyrics.result.lines : null;
   const activeIndex = lines ? findActiveIndex(lines, positionSec) : -1;
 
@@ -57,17 +60,18 @@ export function LyricsDisplay({ title, artist, lyrics, positionSec, mode, flipAx
 
   const active = lines ? (activeIndex < 0 ? MUSIC_NOTE : lineAt(activeIndex)) : messageFor(lyrics);
   const trackInfo = artist ? `${title} — ${artist}` : title;
+  const sideSize = { fontSize: FONT_SIZE.side * textScale, minHeight: 30 * textScale };
 
   return (
     <View style={[styles.container, mode === 'hud' && { transform: [...MIRROR_TRANSFORMS[flipAxis]] }]}>
       {trackInfo ? (
-        <Text style={styles.trackInfo} numberOfLines={1}>
+        <Text style={[styles.trackInfo, { fontSize: FONT_SIZE.trackInfo * textScale }]} numberOfLines={1}>
           {withDirectionMark(trackInfo)}
         </Text>
       ) : null}
-      <LyricLineText text={lineAt(activeIndex - 1)} style={styles.sideLine} numberOfLines={1} />
-      <LyricLineText text={active} style={styles.activeLine} />
-      <LyricLineText text={lineAt(activeIndex + 1)} style={styles.sideLine} numberOfLines={1} />
+      <LyricLineText text={lineAt(activeIndex - 1)} style={[styles.sideLine, sideSize]} numberOfLines={1} />
+      <LyricLineText text={active} style={[styles.activeLine, { fontSize: FONT_SIZE.active * textScale }]} />
+      <LyricLineText text={lineAt(activeIndex + 1)} style={[styles.sideLine, sideSize]} numberOfLines={1} />
     </View>
   );
 }
@@ -81,19 +85,15 @@ const styles = StyleSheet.create({
   },
   trackInfo: {
     color: '#666666',
-    fontSize: 16,
     marginBottom: 24,
     textAlign: 'center',
   },
   sideLine: {
     color: '#555555',
-    fontSize: 24,
     marginVertical: 12,
-    minHeight: 30,
   },
   activeLine: {
     color: '#FFFFFF',
-    fontSize: 44,
     fontWeight: 'bold',
     marginVertical: 8,
   },

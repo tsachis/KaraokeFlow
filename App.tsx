@@ -33,7 +33,7 @@ export function App() {
   }, [state?.title, state?.artist, state?.album, state?.durationMs]);
 
   const lyrics = useLyrics(track);
-  const positionSec = usePlaybackTime(state, settings.offsetMs);
+  const positionSec = usePlaybackTime(state);
 
   // Lying flat on the dash the accelerometer is unreliable, so HUD pins one landscape side.
   useEffect(() => {
@@ -86,6 +86,7 @@ export function App() {
             positionSec={positionSec}
             mode={settings.mode}
             flipAxis={settings.flipAxis}
+            textScale={settings.textScale}
           />
         </Pressable>
       )}

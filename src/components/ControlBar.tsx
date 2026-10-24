@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { FlipAxis, Settings } from '../hooks/useSettings';
+import { TEXT_SCALE, type FlipAxis, type Settings } from '../hooks/useSettings';
 
-const OFFSET_STEP_MS = 250;
 const NEXT_FLIP: Record<FlipAxis, FlipAxis> = { vertical: 'horizontal', horizontal: 'both', both: 'vertical' };
 
 interface ControlBarProps {
@@ -28,8 +27,12 @@ function ControlButton({ label, onPress }: ControlButtonProps) {
 }
 
 export function ControlBar({ settings, onChange }: ControlBarProps) {
-  const { mode, flipAxis, offsetMs } = settings;
-  const offsetLabel = `${offsetMs > 0 ? '+' : ''}${(offsetMs / 1000).toFixed(2)}s`;
+  const { mode, flipAxis, textScale } = settings;
+  // Rounded so repeated 0.1 steps don't drift into 1.0000000002.
+  const zoom = (delta: number) => {
+    const next = Math.round((textScale + delta) * 10) / 10;
+    onChange({ textScale: Math.min(TEXT_SCALE.max, Math.max(TEXT_SCALE.min, next)) });
+  };
 
   return (
     <View style={styles.bar}>
@@ -40,11 +43,11 @@ export function ControlBar({ settings, onChange }: ControlBarProps) {
       {mode === 'hud' ? (
         <ControlButton label={`Mirror: ${flipAxis}`} onPress={() => onChange({ flipAxis: NEXT_FLIP[flipAxis] })} />
       ) : null}
-      <ControlButton label="Later" onPress={() => onChange({ offsetMs: offsetMs - OFFSET_STEP_MS })} />
-      <Pressable onLongPress={() => onChange({ offsetMs: 0 })}>
-        <Text style={styles.offset}>Sync {offsetLabel}</Text>
+      <ControlButton label="−" onPress={() => zoom(-TEXT_SCALE.step)} />
+      <Pressable onLongPress={() => onChange({ textScale: TEXT_SCALE.default })}>
+        <Text style={styles.zoomLabel}>Text {Math.round(textScale * 100)}%</Text>
       </Pressable>
-      <ControlButton label="Earlier" onPress={() => onChange({ offsetMs: offsetMs + OFFSET_STEP_MS })} />
+      <ControlButton label="+" onPress={() => zoom(TEXT_SCALE.step)} />
     </View>
   );
 }
@@ -75,7 +78,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  offset: {
+  zoomLabel: {
     color: '#888888',
     fontSize: 14,
     minWidth: 90,

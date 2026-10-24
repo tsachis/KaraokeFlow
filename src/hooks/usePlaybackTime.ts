@@ -5,7 +5,7 @@ import { estimatePositionSec, type PlaybackSnapshot } from '../lib/playbackClock
 const TICK_MS = 100;
 
 /** Current track position in seconds, ticking while the player is playing. */
-export function usePlaybackTime(snapshot: PlaybackSnapshot | null, offsetMs: number): number {
+export function usePlaybackTime(snapshot: PlaybackSnapshot | null): number {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -17,5 +17,5 @@ export function usePlaybackTime(snapshot: PlaybackSnapshot | null, offsetMs: num
     return () => clearInterval(timer);
   }, [snapshot]);
 
-  return snapshot ? estimatePositionSec(snapshot, now, offsetMs) : 0;
+  return snapshot ? estimatePositionSec(snapshot, now) : 0;
 }

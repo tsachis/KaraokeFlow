@@ -29,7 +29,7 @@ Real-time, time-synced song lyrics for a phone in your car. Made for an old Andr
 |---|---|
 | **Mode** | Switches between HUD and DIRECT. |
 | **Mirror** (HUD only) | `vertical` / `horizontal` / `both`. Use `vertical` when the top of the phone points at the windshield. Try the others if the reflection reads wrong. |
-| **Later / Earlier** | Moves the lyrics by 0.25 s if they're out of sync. Long-press the value to reset it. |
+| **− / +** | Makes the lyrics text smaller or larger (60%–200%). Long-press the % value to reset it. |
 
 The screen stays on, and the app locks to landscape.
 
