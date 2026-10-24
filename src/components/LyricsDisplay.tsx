@@ -31,7 +31,7 @@ function messageFor(lyrics: LyricsStatus): string {
     case 'loading':
       return 'Finding lyrics...';
     case 'error':
-      return 'Could not load lyrics';
+      return lyrics.willRetry ? 'Could not load lyrics, trying again...' : 'Could not load lyrics';
     case 'ready':
       switch (lyrics.result.kind) {
         case 'instrumental':

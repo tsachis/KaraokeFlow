@@ -76,7 +76,8 @@ describe('fetchLyrics', () => {
   it('throws on errors that are not worth retrying', async () => {
     const fn = jest.fn(async () => ({ ok: false, status: 400, json: async () => null })) as unknown as typeof fetch;
     await expect(fetchLyrics({ title: 'Song', artist: 'Artist' }, fn)).rejects.toThrow('400');
-    expect(fn).toHaveBeenCalledTimes(1);
+    // Two passes without a duration (artist search, free text), one try each.
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -142,8 +143,74 @@ describe('fetchLyrics retries', () => {
     const fn = jest.fn(async () => ({ ok: false, status: 503, json: async () => null })) as unknown as typeof fetch;
     const pending = fetchLyrics({ title: 'Song', artist: 'Artist', durationSec: 200 }, fn);
     const assertion = expect(pending).rejects.toThrow('503');
-    await jest.advanceTimersByTimeAsync(4000);
+    await jest.advanceTimersByTimeAsync(60_000);
     await assertion;
-    expect(fn).toHaveBeenCalledTimes(3);
+    // Four passes (get, artist search, title only, free text), four tries each.
+    expect(fn).toHaveBeenCalledTimes(16);
+  });
+
+  it('retries network errors and timeouts', async () => {
+    let calls = 0;
+    const fn = jest.fn(async () => {
+      calls++;
+      if (calls === 1) throw new TypeError('Network request failed');
+      return { ok: true, status: 200, json: async () => record({ syncedLyrics: '[00:01.00]Hi' }) };
+    }) as unknown as typeof fetch;
+
+    const pending = fetchLyrics({ title: 'Song', artist: 'Artist', durationSec: 200 }, fn);
+    await jest.advanceTimersByTimeAsync(2000);
+    expect(await pending).toEqual({ kind: 'synced', lines: [{ time: 1, text: 'Hi' }] });
+  });
+
+  it('aborts a request that hangs past the timeout', async () => {
+    const signals: AbortSignal[] = [];
+    const fn = jest.fn(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          signals.push(init.signal!);
+          init.signal!.addEventListener('abort', () => reject(new Error('aborted')));
+        }),
+    ) as unknown as typeof fetch;
+
+    void fetchLyrics({ title: 'Song', artist: 'Artist', durationSec: 200 }, fn).catch(() => undefined);
+    await jest.advanceTimersByTimeAsync(10_001);
+    expect(signals[0].aborted).toBe(true);
+    // The retry follows after the first back-off delay.
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(signals).toHaveLength(2);
+  });
+});
+
+describe('fetchLyrics with a failing pass', () => {
+  function fetchWhere(handler: (params: URLSearchParams, path: string) => { status: number; body?: unknown }) {
+    return jest.fn(async (url: string) => {
+      const { pathname, searchParams } = new URL(url);
+      const { status, body } = handler(searchParams, pathname);
+      return { ok: status === 200, status, json: async () => body };
+    }) as unknown as typeof fetch;
+  }
+
+  it('keeps going after a failed pass and returns a later synced match', async () => {
+    const fn = fetchWhere((params, path) => {
+      if (path === '/api/get') return { status: 400 };
+      if (params.has('artist_name')) return { status: 200, body: [] };
+      return { status: 200, body: [record({ syncedLyrics: '[00:01.00]Found' })] };
+    });
+    expect(await fetchLyrics({ title: 'Song', artist: 'Artist', durationSec: 200 }, fn)).toEqual({
+      kind: 'synced',
+      lines: [{ time: 1, text: 'Found' }],
+    });
+  });
+
+  it('throws instead of returning a miss when a pass failed', async () => {
+    const fn = fetchWhere((_params, path) => (path === '/api/get' ? { status: 400 } : { status: 200, body: [] }));
+    await expect(fetchLyrics({ title: 'Song', artist: 'Artist', durationSec: 200 }, fn)).rejects.toThrow('400');
+  });
+
+  it('throws instead of settling for plain lyrics when a pass failed', async () => {
+    const fn = fetchWhere((_params, path) =>
+      path === '/api/get' ? { status: 400 } : { status: 200, body: [record({ plainLyrics: 'words' })] },
+    );
+    await expect(fetchLyrics({ title: 'Song', artist: 'Artist', durationSec: 200 }, fn)).rejects.toThrow('400');
   });
 });
