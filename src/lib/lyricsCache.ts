@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { LyricsResult } from './lrclib';
 import type { TrackQuery } from './trackQuery';
 
-const PREFIX = 'lyrics:v1:';
+// Bump when the lookup improves, so misses cached by an older version are retried.
+const PREFIX = 'lyrics:v2:';
 // A miss is retried after a day; the crowd-sourced database grows.
 const NOT_FOUND_TTL_MS = 24 * 60 * 60 * 1000;
 
