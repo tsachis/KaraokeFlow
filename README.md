@@ -15,7 +15,7 @@ Real-time, time-synced song lyrics for a phone in your car. Made for an old Andr
 |---|---|---|
 | Media session module | `modules/media-session` (Kotlin) | Reads title, artist, duration, position and play state from the active player through `MediaSessionManager`. Android only gives this to apps with **notification access**. |
 | Playback clock | `src/lib/playbackClock.ts` | Players only report position on play / pause / seek. The app estimates the position from the last report and updates 10× per second. |
-| Lyrics lookup | `src/lib/lrclib.ts` | Exact match by title + artist + duration first, then searches with a cleaned title ("- Remastered", "feat. X" removed). Results are cached on the device. |
+| Lyrics lookup | `src/lib/lrclib.ts` | Exact match by title + artist + duration first, then searches with a cleaned title ("- Remastered", "feat. X" removed). Last, it searches by title only and accepts a match only if the length is within 2 s. This catches Hebrew songs whose artist is stored in the other script (e.g. "ערן צור" vs "Eran Tzur"). Retries when LRCLIB is busy. Results are cached on the device. |
 | LRC parser | `src/lib/lrc.ts` | Supports `[mm:ss.xx]`, several tags on one line, and `[offset:]`. |
 | RTL | `src/lib/textDirection.ts` | Each line gets a direction mark based on its main script. Android ignores `writingDirection`, so the mark does the work. The app layout itself stays LTR. |
 
