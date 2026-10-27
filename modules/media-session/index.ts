@@ -1,2 +1,2 @@
 export { MediaSession } from './src/MediaSessionModule';
-export type { MediaState, MediaStateEvent } from './src/MediaSession.types';
+export type { CarLyrics, MediaState, MediaStateEvent } from './src/MediaSession.types';
