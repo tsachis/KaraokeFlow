@@ -3,10 +3,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { LyricsStatus } from '../hooks/useLyrics';
 import type { DisplayMode, FlipAxis } from '../hooks/useSettings';
 import { findActiveIndex } from '../lib/lrc';
+import { MUSIC_NOTE, messageFor } from '../lib/lyricsMessage';
 import { withDirectionMark } from '../lib/textDirection';
 import { LyricLineText } from './LyricLineText';
-
-const MUSIC_NOTE = '♪';
 
 interface LyricsDisplayProps {
   title: string;
@@ -23,28 +22,6 @@ const MIRROR_TRANSFORMS = {
   horizontal: [{ scaleX: -1 }],
   both: [{ scaleX: -1 }, { scaleY: -1 }],
 } as const;
-
-function messageFor(lyrics: LyricsStatus): string {
-  switch (lyrics.status) {
-    case 'idle':
-      return 'Play music to sync lyrics...';
-    case 'loading':
-      return 'Finding lyrics...';
-    case 'error':
-      return lyrics.willRetry ? 'Could not load lyrics, trying again...' : 'Could not load lyrics';
-    case 'ready':
-      switch (lyrics.result.kind) {
-        case 'instrumental':
-          return `${MUSIC_NOTE} Instrumental ${MUSIC_NOTE}`;
-        case 'plain':
-          return 'No synced lyrics for this song';
-        case 'notFound':
-          return 'No lyrics found';
-        case 'synced':
-          return '';
-      }
-  }
-}
 
 const FONT_SIZE = { trackInfo: 16, side: 24, active: 44 } as const;
 

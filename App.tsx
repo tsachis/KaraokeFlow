@@ -9,6 +9,7 @@ import { ControlBar } from './src/components/ControlBar';
 import { LyricsDisplay } from './src/components/LyricsDisplay';
 import { PermissionScreen } from './src/components/PermissionScreen';
 import { RetryButton } from './src/components/RetryButton';
+import { useCarLyrics } from './src/hooks/useCarLyrics';
 import { useLyrics } from './src/hooks/useLyrics';
 import { useMediaSession } from './src/hooks/useMediaSession';
 import { usePlaybackTime } from './src/hooks/usePlaybackTime';
@@ -34,6 +35,7 @@ export function App() {
   }, [state?.title, state?.artist, state?.album, state?.durationMs]);
 
   const { lyrics, retry } = useLyrics(track);
+  useCarLyrics(state?.title, lyrics);
   const positionSec = usePlaybackTime(state);
 
   // Lying flat on the dash the accelerometer is unreliable, so HUD pins one landscape side.

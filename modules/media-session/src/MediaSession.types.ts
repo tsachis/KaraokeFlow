@@ -11,6 +11,16 @@ export interface MediaState {
   isPlaying: boolean;
 }
 
+/** Lyrics for the Android Auto screen; the native side does the timing. */
+export interface CarLyrics {
+  /** The player's title these lyrics were looked up for. */
+  title: string;
+  /** Synced lines; `timeMs` is from the start of the track, empty `text` is a gap. */
+  lines: { timeMs: number; text: string }[];
+  /** Shown when there are no synced lines. */
+  message: string | null;
+}
+
 /** `empty: true` means no app is holding a media session. */
 export type MediaStateEvent = MediaState | { empty: true };
 

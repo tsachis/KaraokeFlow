@@ -33,6 +33,26 @@ Real-time, time-synced song lyrics for a phone in your car. Made for an old Andr
 
 The screen stays on, and the app locks to landscape.
 
+## Android Auto
+
+Android Auto only lets apps use Google's fixed templates, so KaraokeFlow shows up there as a **media app**. Its now-playing screen shows the **current lyric line as the title** and the **next line as the subtitle**. Play, pause, skip and seek are passed on to the real player (Spotify, YouTube Music, …).
+
+Android Auto hides apps that were not installed from the Play Store, so turn this on once:
+
+1. On the phone, open **Android Auto settings**, tap **Version** 10 times, and confirm developer mode.
+2. Open the **⋮** menu → **Developer settings** → turn on **Unknown sources**.
+3. Connect to the car. If KaraokeFlow is not in the launcher, add it under **Customize launcher**.
+
+To use it:
+
+1. Open KaraokeFlow on the phone once. The phone app looks up the lyrics, and the car screen only keeps them in time. If the app is not running, the car shows the song with "Open KaraokeFlow on your phone to load lyrics".
+2. Play music in your player, then pick **KaraokeFlow** on the car screen.
+
+| Part | Where | What it does |
+|---|---|---|
+| Car media service | `modules/media-session/.../CarMediaService.kt` | A `MediaBrowserService` that Android Auto binds to. It mirrors the real player's state and moves to the next line at each line's time. |
+| Lyrics hand-off | `src/hooks/useCarLyrics.ts` → `setCarLyrics` | JS sends the synced lines once per song. Timing runs natively, because JS timers stop while the app is in the background. |
+
 ## Development
 
 You need Node 20+. Expo Go **can't** run this app because it has a custom native module. Use a development build instead.
