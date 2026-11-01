@@ -1,3 +1,4 @@
+import * as Brightness from 'expo-brightness';
 import { useKeepAwake } from 'expo-keep-awake';
 import { NavigationBar } from 'expo-navigation-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -46,6 +47,11 @@ export function App() {
         : ScreenOrientation.OrientationLock.LANDSCAPE;
     ScreenOrientation.lockAsync(lock).catch(() => undefined);
   }, [settings.mode]);
+
+  // Window-level brightness: Android drops the override when the app leaves the foreground.
+  useEffect(() => {
+    Brightness.setBrightnessAsync(1).catch(() => undefined);
+  }, []);
 
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
